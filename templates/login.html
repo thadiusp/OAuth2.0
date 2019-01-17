@@ -1,0 +1,66 @@
+<html>
+
+<head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="https://apis.google.com/js/platform.js?onload=start"></script>
+</head>
+
+<body>
+  <div id="signinButton">
+    <span class="g-signin" data-scope='openid email' data-clientid='594564265839-44rgqbsp5oqtkn1srqrcs4spr49s20u1.apps.googleusercontent.com'
+      data-redirecturi="postmessage" data-accesstype="offline" data-cookiepolicy="single_host_origin" data-callback="signInCallback"
+      data-approvalprompt="force">
+    </span>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    /*function login(state) {
+      const scopes = ['https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/plus.login',
+        'openid', 'email', 'https://www.googleapis.com/auth/plus.me'
+      ];
+      const joinedScopes = scopes.join('+');
+      const googleUrl = 'https://apis.google.com/js/platform.js?onload=start' + '?client_id=' +
+        '594564265839-44rgqbsp5oqtkn1srqrcs4spr49s20u1.apps.googleusercontent.com' + // clientId is the client id from your created credentials in the google API console.
+        '&redirect_uri=' + '/restaurant' + // the redirect uri of your flask application (link to your gconnect function) 
+        '&scope=' + joinedScopes + '&response_type=code' + '&state=' + '{{STATE}}'; // the xsrf token which you previously generated in the show_login_page() function, which shows the login page 
+
+      console.log(googleUrl);
+      console.log(state);
+      window.location = 'http://localhost:5000/restaurant'; // redirect to begin the authentication process
+    };*/
+
+    function signInCallback(authResult) {
+      if (authResult['code']) {
+        console.log('{{code}}')
+        //Hide the sign-in button once the user is authorized
+        $('#signinButton').attr('style', 'display:none');
+        //send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
+        $.ajax({
+          type: 'POST',
+          url: '/gconnect?state={{STATE}}',
+          processData: false,
+          contentType: 'application/octet-stream; charset=utf-8',
+          data: authResult['code'],
+          success: function (result) {
+            if (result) {
+              $('#result').html('Login Successful!</br>' + result + '</br>Redirecting...')
+              setTimeout(function () {
+                window.location.href = "/restaurant";
+              }, 4000);
+            } else if (authResult['error']) {
+              console.log('There was an error: ' + authResult['error']);
+            } else {
+              $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+            }
+          }
+        })
+
+      }
+
+    }
+  </script>
+</body>
+
+</html>
